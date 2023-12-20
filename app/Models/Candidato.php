@@ -22,4 +22,8 @@ class Candidato extends Model
     public function poblacion(){
         return $this->hasOne(Poblacion::class, 'COD_SIS');
     }
+
+    public function poblacionCI(){
+        return $this->hasOne(Poblacion::class,'CARNETIDENTIDAD','COD_CARNETIDENTIDAD');
+    }
 }
