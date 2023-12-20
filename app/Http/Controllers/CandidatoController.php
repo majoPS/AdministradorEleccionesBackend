@@ -19,6 +19,9 @@ class CandidatoController extends Controller
 
 
         $poblacion = Poblacion::where('CARNETIDENTIDAD', $ci)->first();
+        if($poblacion->ESTUDIANTE){
+            return response()->json(['error','El candidato no puede ser un estudiante'], 400);
+        }
 
         if($poblacion)
         {
@@ -41,7 +44,8 @@ class CandidatoController extends Controller
 
     public function obtenerCandidatosPorFrente($codFrente)
     {
-        $candidatos = Candidato::where('COD_FRENTE', $codFrente)->get();
+        $candidatos = Candidato::where('COD_FRENTE', $codFrente)->with('poblacionCI')->get();
+       
 
         return response()->json($candidatos);
     }

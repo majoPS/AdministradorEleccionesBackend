@@ -165,7 +165,8 @@ Route::get('/publicar_convocatoria_lista', [PublicarConvocatoriaController::clas
 
 Route::prefix('frentes')->group(function(){
     Route::get('/',[FrenteController::class, 'index'])->name('frentes');
-    Route::post('/nuevo',[FrenteController::class, 'store']);
+   // Route::post('/nuevo/candidato',[FrenteController::class,'storeCandidato'])->name("frente.store");
+    Route::post('/nuevo/{COD_ELECCION}',[FrenteController::class, 'store']);
     Route::get('/{frente}',[FrenteController::class, 'show'])->name('frente.show');
     Route::put('/{frente}',[FrenteController::class, 'update'])->name('frente.update');
     Route::put('delete/{frente}',[FrenteController::class, 'delete'])->name('frente.delete');
@@ -382,7 +383,7 @@ Route::get('/verificar-boletas/{codEleccion}', [GenerarBoletasController::class,
 //---------------------- Jurados--------------------------------------------
 Route::get('/jurado',[JuradoController::class,'index'] );
 //Route::post('mesa/{id}/jurado',[JuradoController::class,'store'] );
-Route::post('mesa/{cod_mesa}',[JuradoController::class,'store'] );
+Route::post('jurado/mesa/{cod_mesa}',[JuradoController::class,'store'] );
 Route::put('/jurado/{id}',[JuradoController::class,'update'] );
 Route::get('/obtenerJuradosPorMesa/{codMesa}', [JuradoController::class, 'obtenerJuradosPorMesa']);
 

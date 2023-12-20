@@ -36,6 +36,7 @@ class AsociarTitularSuplenteController extends Controller
         $titulares = DB::table('asociartitularsuplente')
             ->join('poblacion', 'asociartitularsuplente.COD_SIS', '=', 'poblacion.CODSIS')
             ->select(
+                'poblacion.CODSIS',
                 'poblacion.CARNETIDENTIDAD',
                 'poblacion.NOMBRE',
                 'poblacion.APELLIDO',
@@ -50,6 +51,7 @@ class AsociarTitularSuplenteController extends Controller
         $suplentes = DB::table('asociartitularsuplente')
             ->join('poblacion', 'asociartitularsuplente.COD_SIS', '=', 'poblacion.CODSIS')
             ->select(
+                'poblacion.CODSIS',
                 'poblacion.CARNETIDENTIDAD',
                 'poblacion.NOMBRE',
                 'poblacion.APELLIDO',

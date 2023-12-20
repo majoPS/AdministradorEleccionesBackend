@@ -20,7 +20,82 @@ class FrenteController extends Controller
 
         return response()->json($frentes);
     }
-    public function store(Request $request)
+    public function store(Request $request, $COD_ELECCION)
+    {
+        // Valida los datos recibidos en la solicitud
+        $eleccionActiva = Elecciones::where('COD_ELECCION', $COD_ELECCION)
+        ->where('ELECCION_ACTIVA', true)
+        ->first();
+
+    if(!$eleccionActiva){
+        return response()->json(['error' => 'La elección no está activa en este momento.'], 400);
+    }
+
+    $fechaIniConvocatoria = Carbon::parse($eleccionActiva->FECHA_INI_CONVOCATORIA);
+    $fechaFinConvocatoria = Carbon::parse($eleccionActiva->FECHA_FIN_CONVOCATORIA);
+
+    $fechaActual = now();
+    if(!$fechaActual->between($fechaIniConvocatoria, $fechaFinConvocatoria)){
+        return response()->json(['error' => 'El periodo de inscripción de frentes para esta elección no está activo.'], 400);
+    }
+
+    $request->validate([
+        'NOMBRE_FRENTE' => 'required|string|min:2|max:30|unique:frente,NOMBRE_FRENTE',
+        'SIGLA_FRENTE' => 'required|string|min:2|max:15|unique:frente,SIGLA_FRENTE',
+        'LOGO' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        'COD_CARRERA' => 'required'
+    ]);
+
+
+    $eleccionActiva = Elecciones::where('COD_ELECCION', $COD_ELECCION)
+    ->where('ELECCION_ACTIVA', true)
+    ->first();
+
+if(!$eleccionActiva){
+    return response()->json(['error' => 'La elección no está activa en este momento.'], 400);
+}
+
+$fechaIniConvocatoria = Carbon::parse($eleccionActiva->FECHA_INI_CONVOCATORIA);
+$fechaFinConvocatoria = Carbon::parse($eleccionActiva->FECHA_FIN_CONVOCATORIA);
+
+$fechaActual = now();
+if(!$fechaActual->between($fechaIniConvocatoria, $fechaFinConvocatoria)){
+    return response()->json(['error' => 'El periodo de inscripción de frentes para esta elección no está activo.'], 400);
+}
+
+$request->validate([
+    'NOMBRE_FRENTE' => 'required|string|min:2|max:30|unique:frente,NOMBRE_FRENTE',
+    'SIGLA_FRENTE' => 'required|string|min:2|max:15|unique:frente,SIGLA_FRENTE',
+    'LOGO' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+    'COD_CARRERA' => 'required'
+]);
+
+if($request->hasFile('LOGO'))
+{
+    $logo = $request->file('LOGO');
+    $nombreLogo = uniqid() . '-' . $logo->getClientOriginalName();
+    $logo->storeAs('public/logos', $nombreLogo);
+
+    $frente = new Frente();
+
+    $frente -> NOMBRE_FRENTE = $request->NOMBRE_FRENTE;
+    $frente -> SIGLA_FRENTE = $request->SIGLA_FRENTE;
+    $frente -> FECHA_INSCRIPCION = $fechaActual; 
+    $frente -> ARCHIVADO = false;
+    $frente -> LOGO = $nombreLogo;
+    $frente -> COD_CARRERA = $request->COD_CARRERA;
+    $frente -> COD_ELECCION = $COD_ELECCION;
+    
+    $frente -> save();
+} else {
+    return response()->json(['error' => 'No se proporcionó ningun logo.'], 400);
+}
+
+    return response()->json(['message' => 'Se ha inscrito el frente correctamente.']);
+    }
+
+    //Nuevo metodo para añadir candidato y Frente
+    public function storeCandidato(Request $request)
     {
         // Valida los datos recibidos en la solicitud
 
@@ -57,12 +132,52 @@ class FrenteController extends Controller
             $eleccionesFrenteController = new EleccionesFrenteController();
             $eleccionesFrenteController->guardarRelacionEleccionesFrente($request->COD_ELECCION, $idFrente);
 
-            return response()->json(['message' => 'Se ha inscrito el frente correctamente.']);
+
+
+            $frenteId = $frente->COD_FRENTE;
+
+
+
+            $ci = $request->CARNETIDENTIDAD;
+            $cargoPostulado = $request->CARGO_POSTULADO;
+        
+            $poblacion = Poblacion::where('CARNETIDENTIDAD', $ci)->first();
+            
+            if($poblacion->ESTUDIANTE){
+                return response()->json(['error','El candidato no puede ser un estudiante'], 400);
+            }
+    
+            if($poblacion)
+            {
+                $nuevoIdCandidato = mt_rand(10000, 99999);
+                $nuevoCandidato = new Candidato;
+    
+                $nuevoCandidato->COD_CANDIDATO = $nuevoIdCandidato;
+                $nuevoCandidato->COD_CARNETIDENTIDAD = $poblacion->CARNETIDENTIDAD;
+                $nuevoCandidato->CARGO_POSTULADO = $cargoPostulado;
+                $nuevoCandidato->HABILITADO = 1;
+                $nuevoCandidato->COD_FRENTE = $frenteId;
+    
+                $nuevoCandidato->save();
+    
+                
+            }else{
+
+                return response()->json(['error', 'No se encontró el CI proporcionado.'], 400);
+            }
+    
+
+            return response()->json(['message' => 'Se ha inscrito el frente con el candidato correctamente.']);
+
         } catch (\Exception $e) {
             // Maneja cualquier error que pueda ocurrir durante el proceso
             return response()->json(['error' => 'Error al inscribir el frente político.', 'details' => $e->getMessage()], 500);
         }
     }
+
+
+
+
 
     public function show($id)
     {
@@ -196,7 +311,7 @@ class FrenteController extends Controller
     public function listarFrentesYCandidatos()
     {
 
-        $frentes = Frente::with(['candidato', 'candidato.CARGO_POSTULADO'])->get();
+        $frentes = Frente::where('ARCHIVADO',false)->with(['candidato', 'candidato.CARGO_POSTULADO'])->get();
 
         return response()->json(['frentes' => $frentes]);
     }
@@ -208,7 +323,7 @@ class FrenteController extends Controller
             return response()->json(['error' => 'El código de carrera debe ser un número.'], 400);
         }
 
-        $frentesCarrera = Frente::where('COD_CARRERA', $COD_CARRERA)->get();
+        $frentesCarrera = Frente::where('COD_CARRERA', $COD_CARRERA)->where('ARCHIVADO',false)->get();
 
         if ($frentesCarrera->isEmpty()) {
             return response()->json(['mensaje' => 'No se encontraron frentes para la carrera especificada.']);
