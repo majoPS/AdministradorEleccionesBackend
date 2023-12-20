@@ -20,6 +20,11 @@ use App\Http\Controllers\ListaVotantesController;
 use App\Http\Controllers\GenerarBoletasController;
 use App\Http\Controllers\JuradoController;
 
+use App\Http\Controllers\TribunalController;
+use App\Http\Controllers\SessionsActivaController;
+
+
+
 // Otras rutas...
 
 
@@ -393,5 +398,44 @@ Route::post('/mensajeComiteElectoral/{codComite}',[App\Http\Controllers\AsociarT
 Route::put('/reasignarCandidato', [CandidatoController::class, 'reasignarCandidato']);
 
 Route::get('obtenerFrentesYCandidatos/{idEleccion}', [CandidatoController::class, 'obtenerFrentesYCandidatos']);
+
+
+//_-----------------------------------------
+
+
+Route::post('/registrarCincoUsuarios', [TribunalController::class, 'registrarCincoUsuarios']);
+
+Route::post('/logout', [TribunalController::class, 'logout'])->middleware('auth:sanctum');
+
+//Route::post('/validarCredenciales', [TribunalController::class, 'validarCredenciales']);
+//Route::get('/verificarAuthYSession', [TribunalController::class, 'verificarAuthYSession']);
+
+
+Route::post('/tribunalLogin', [TribunalController::class, 'tribunalLogin']);
+
+Route::post('/login/admin', [TribunalController::class,'adminLogin']);
+//Route::get('/getAdminName', [TribunalController::class,'getAdminName']);
+
+Route::post('/adminLogout', [TribunalController::class, 'adminLogout']);
+
+
+
+
+Route::post('/tribunal/logout', [TribunalController::class, 'tribunalLogout']);
+
+//Route::middleware(['auth:tribunal'])->group(function () {
+ //   Route::get('/getUser', [TribunalController::class,'getUser']);
+//});
+
+
+Route::post('/storesession', [SessionsActivaController::class, 'store']);
+
+
+
+Route::get('/getSessionData', [TribunalController::class,'getSessionData']);
+
+Route::get('/obtenerTodosLosDatos', [TribunalController::class,'obtenerTodosLosDatos']);
+
+Route::post('/recuperarUsuarioPassword', [TribunalController::class, 'recuperarUsuarioPassword']);
 
 
