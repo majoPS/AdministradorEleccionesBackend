@@ -26,8 +26,22 @@ class JuradoController extends Controller
 
     public function store(Request $request, $cod_mesa)
     {   
-        $poblacion = Poblacion::all();
-        $mesa=Mesas::find($cod_mesa)->NUM_MESA;
+
+        $mesa = Mesas::find($cod_mesa);
+
+        $apellidosEstudiantes = explode('-', $mesa->APELLIDOS_ESTUDIANTES);
+        
+        $apellidosEstudiantes[0]=str_replace("Apellido","",$apellidosEstudiantes[0]); 
+        $apellidosEstudiantes[1]=str_replace("Apellido","",$apellidosEstudiantes[1]);
+
+        $poblacion = Poblacion::orderBy('APELLIDO')->get();
+        $poblacion= $poblacion->filter(function ( $value, int $key) use($apellidosEstudiantes){
+            $bool=($value->APELLIDO[0]>=$apellidosEstudiantes[0]) && ($value->APELLIDO[0]<=$apellidosEstudiantes[1]);
+            
+            return $bool;
+        });
+
+        $mesa=$mesa->NUM_MESA;
     
         [$docentes, $estudiantes] = $poblacion->partition(function ($usuario) {
         return $usuario->DOCENTE;
@@ -39,6 +53,7 @@ class JuradoController extends Controller
 
         //docentes(titulares y suplentes)
         $docentesTitulares = $docentes->random(2);
+        
         $docentesSuplentes = $docentes->reject(function ($docente) use ($docentesTitulares) {
             return $docentesTitulares -> contains('CODSIS', $docente->CODSIS);
         })->random(2);
@@ -105,7 +120,7 @@ class JuradoController extends Controller
     }
 }
 
-
+//Y si es de un comite de una eleccion anterior? En posteriores elecciones nunca seria jurado el store esta mal planteado, cuales son suplentes, cuales titulares?
 function store22($codMesa)
 {
 
