@@ -301,9 +301,8 @@ if($request->hasFile('LOGO'))
             return response()->json(['error' => 'No se encontró el frente.']);
         }
 
-        $frente -> ARCHIVADO = true;
         $frente -> COD_MOTIVO = $motivoEliminacion->COD_MOTIVO;
-        $frente -> save();
+        $frente -> delete();
 
         return response()->json(['message' => 'El frente se ha eliminado correctamente.']);
     }
