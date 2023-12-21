@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 use App\Models\MotivoEliminacion;
 use App\Http\Controllers\EleccionesFrenteController;
-
+use app\Models\Candidato;
+use App\Models\Poblacion;
 use Illuminate\Support\Facades\DB;
 
 class FrenteController extends Controller
@@ -301,9 +302,7 @@ if($request->hasFile('LOGO'))
             return response()->json(['error' => 'No se encontró el frente.']);
         }
 
-        $frente -> ARCHIVADO = true;
-        $frente -> COD_MOTIVO = $motivoEliminacion->COD_MOTIVO;
-        $frente -> save();
+        $frente -> delete();
 
         return response()->json(['message' => 'El frente se ha eliminado correctamente.']);
     }
