@@ -98,7 +98,8 @@ public function obtenerFrentesYCandidatos($idEleccion)
             'poblacion.NOMBRE as NOMBRE_CANDIDATO',
             'poblacion.APELLIDO as APELLIDO_CANDIDATO',
             'poblacion.CARNETIDENTIDAD',
-            'poblacion.CODSIS'
+            'poblacion.CODSIS',
+            'candidato.CARGO_POSTULADO'
         )
         ->leftJoin('candidato', 'candidato.COD_FRENTE', '=', 'frente.COD_FRENTE')
         ->leftJoin('poblacion', 'candidato.COD_CARNETIDENTIDAD', '=', 'poblacion.CARNETIDENTIDAD')
@@ -126,6 +127,7 @@ public function obtenerFrentesYCandidatos($idEleccion)
                 'APELLIDO' => $frente->APELLIDO_CANDIDATO,
                 'CARNETIDENTIDAD' => $frente->CARNETIDENTIDAD,
                 'CODSIS' => $frente->CODSIS,
+                'CARGO_POSTULADO' => $frente->CARGO_POSTULADO,
             ];
         }
     }
